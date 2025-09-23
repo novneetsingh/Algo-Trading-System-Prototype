@@ -5,6 +5,7 @@ import dataRoutes from "./routes/dataRoutes.js";
 import strategyRoutes from "./routes/strategyRoutes.js";
 import backtestRoutes from "./routes/backtestRoutes.js";
 import papertradeRoutes from "./routes/papertradeRoutes.js";
+import portfolioRoutes from "./routes/portfolioRoutes.js";
 import prisma from "./config/prisma.js";
 
 dotenv.config();
@@ -16,7 +17,7 @@ app.use(express.json());
 app.use(cors());
 
 // Test database connection
-async function testDbConnection() {
+(async () => {
   try {
     await prisma.$connect();
     console.log("Database connection established");
@@ -24,15 +25,14 @@ async function testDbConnection() {
     console.error("Database connection failed:", error);
     process.exit(1);
   }
-}
-
-testDbConnection();
+})();
 
 // Routes
 app.use("/data", dataRoutes);
 app.use("/strategy", strategyRoutes);
 app.use("/backtest", backtestRoutes);
 app.use("/papertrade", papertradeRoutes);
+app.use("/portfolio", portfolioRoutes);
 
 // global error handling middleware
 app.use((err, req, res, next) => {
