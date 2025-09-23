@@ -1,44 +1,46 @@
-import { runSMA, runRSI, runBollinger } from "./strategyService.js";
+import { runSMA, runRSI } from "./strategyService.js";
+import ErrorResponse from "../utils/errorResponse.js";
 
-export async function backtestStrategy(symbol, strategy, capital, params) {
+export async function backtestStrategy(
+  symbol,
+  strategy,
+  capital,
+  smaShortWindow,
+  smaLongWindow,
+  rsiPeriod
+) {
   let signals = [];
 
-  switch (strategy) {
-    case "sma":
-      signals = await runSMA(
-        symbol,
-        params.shortWindow || 20,
-        params.longWindow || 50
-      );
-      break;
-    case "rsi":
-      signals = await runRSI(symbol, params.period || 14);
-      break;
-    case "bollinger":
-      signals = await runBollinger(symbol, params.window || 20);
-      break;
-    default:
-      throw new Error("Invalid strategy");
+  if (strategy === "sma") {
+    signals = await runSMA(symbol, smaShortWindow || 20, smaLongWindow || 50);
+  } else if (strategy === "rsi") {
+    signals = await runRSI(symbol, rsiPeriod || 14);
+  } else {
+    throw new ErrorResponse("Invalid strategy", 400);
   }
 
-  let cash = capital,
-    position = 0,
-    trades = [];
+  let cash = capital, // initial capital
+    position = 0, // number of shares held
+    trades = []; // array of trades handled
 
   for (const sig of signals) {
     if (sig.signal === "BUY" && cash > sig.price) {
+      // calculate the number of shares can be bought
       position = Math.floor(cash / sig.price);
       cash -= position * sig.price;
       trades.push({ ...sig, qty: position });
     } else if (sig.signal === "SELL" && position > 0) {
+      // increase the cash and reduce the position
       cash += position * sig.price;
       trades.push({ ...sig, qty: position });
       position = 0;
     }
   }
 
+  // calculate the final equity
+  // if position is positive then buy the last signal price with position
   const finalEquity =
     cash + (position > 0 ? position * signals.at(-1).price : 0);
 
-  return { trades, pnl: finalEquity - capital, finalEquity };
+  return { finalEquity, pnl: finalEquity - capital, trades };
 }
