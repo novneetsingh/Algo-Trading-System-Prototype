@@ -3,11 +3,11 @@ import yahooFinance from "yahoo-finance2";
 // Fetch historical OHLCV data
 export async function getHistoricalData(symbol, startDate, endDate) {
   const queryOptions = {
-    period1: startDate || "2025-09-01",
+    period1: startDate || "2023-06-01",
     period2: endDate || new Date().toISOString().split("T")[0],
   };
 
-  return await yahooFinance.historical(symbol, queryOptions);
+  return (await yahooFinance.chart(symbol, queryOptions)).quotes;
 }
 
 // Fetch current live price
