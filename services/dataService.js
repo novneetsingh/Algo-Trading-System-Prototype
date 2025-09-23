@@ -1,6 +1,6 @@
 import yahooFinance from "yahoo-finance2";
 
-// Fetch historical OHLCV data
+// Fetch historical OHLCV (Open, High, Low, Close, Volume) data
 export async function getHistoricalData(symbol, startDate, endDate) {
   const queryOptions = {
     period1: startDate || "2023-06-01",

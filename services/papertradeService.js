@@ -1,49 +1,33 @@
+import { runSMA, runRSI } from "./strategyService.js";
 import { getLivePrice } from "./dataService.js";
-import { runSMA, runRSI, runBollinger } from "./strategyService.js";
+import ErrorResponse from "../utils/errorResponse.js";
 
-let portfolio = { cash: 100000, positions: [], equity: 100000 };
-
-export async function runPaperTrade(symbol, strategy, capital, params) {
-  const live = await getLivePrice(symbol);
-  const price = live.price;
-
-  // Reuse strategy logic to decide BUY/SELL
+export async function runPaperTrade(
+  symbol,
+  strategy,
+  smaShortWindow,
+  smaLongWindow,
+  rsiPeriod
+) {
   let signals = [];
-  switch (strategy) {
-    case "sma":
-      signals = await runSMA(
-        symbol,
-        params.shortWindow || 20,
-        params.longWindow || 50
-      );
-      break;
-    case "rsi":
-      signals = await runRSI(symbol, params.period || 14);
-      break;
-    case "bollinger":
-      signals = await runBollinger(symbol, params.window || 20);
-      break;
+
+  if (strategy === "sma") {
+    signals = await runSMA(symbol, smaShortWindow || 20, smaLongWindow || 50);
+  } else if (strategy === "rsi") {
+    signals = await runRSI(symbol, rsiPeriod || 14);
+  } else {
+    throw new ErrorResponse("Invalid strategy", 400);
   }
 
-  const lastSignal = signals.at(-1);
-  if (!lastSignal) return portfolio;
-
-  if (lastSignal.signal === "BUY" && portfolio.cash > price) {
-    const qty = Math.floor(portfolio.cash / price);
-    portfolio.positions.push({ symbol, qty, avgPrice: price });
-    portfolio.cash -= qty * price;
-  } else if (lastSignal.signal === "SELL") {
-    const position = portfolio.positions.find((p) => p.symbol === symbol);
-    if (position) {
-      portfolio.cash += position.qty * price;
-      portfolio.positions = portfolio.positions.filter(
-        (p) => p.symbol !== symbol
-      );
-    }
+  const latestSignal = signals.at(-1);
+  if (!latestSignal) {
+    throw new ErrorResponse("No signals generated for this symbol", 400);
   }
 
-  portfolio.equity =
-    portfolio.cash +
-    portfolio.positions.reduce((sum, p) => sum + p.qty * price, 0);
-  return portfolio;
+  const live = await getLivePrice(symbol);
+  const currentPrice = live.regularMarketPrice;
+
+  if (latestSignal.signal === "BUY") {
+  } else if (latestSignal.signal === "SELL") {
+  }
 }

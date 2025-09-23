@@ -19,6 +19,11 @@ export async function backtestStrategy(
     throw new ErrorResponse("Invalid strategy", 400);
   }
 
+  // Check if signals are generated
+  if (!signals.length) {
+    throw new ErrorResponse("No signals generated for this symbol", 400);
+  }
+
   let cash = capital, // initial capital
     position = 0, // number of shares held
     trades = []; // array of trades handled
@@ -42,5 +47,5 @@ export async function backtestStrategy(
   const finalEquity =
     cash + (position > 0 ? position * signals.at(-1).price : 0);
 
-  return { finalEquity, pnl: finalEquity - capital, trades };
+  return { finalEquity, PnL: finalEquity - capital, trades };
 }
