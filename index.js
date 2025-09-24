@@ -27,6 +27,10 @@ app.use(cors());
   }
 })();
 
+app.get("/", (req, res) => {
+  res.send("Algo Trading System Prototype API");
+});
+
 // Routes
 app.use("/data", dataRoutes);
 app.use("/strategy", strategyRoutes);
