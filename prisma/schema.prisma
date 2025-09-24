@@ -14,6 +14,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// model for paper trade portfolio
 model Portfolio {
   id             Int        @id @default(autoincrement())
   userName       String     @unique
@@ -24,6 +25,7 @@ model Portfolio {
   updatedAt      DateTime   @updatedAt
 }
 
+// model for papertrade's position means no. of stocks 
 model Position {
   id          Int       @id @default(autoincrement())
   portfolioId Int
@@ -34,6 +36,7 @@ model Position {
   @@unique([portfolioId, symbol])
 }
 
+// model for papertrade's trade means buy or sell of stock
 model Trade {
   id          Int       @id @default(autoincrement())
   portfolioId Int

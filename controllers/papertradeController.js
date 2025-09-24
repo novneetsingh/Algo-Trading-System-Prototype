@@ -1,6 +1,7 @@
 import { runPaperTrade } from "../services/papertradeService.js";
 import ErrorResponse from "../utils/errorResponse.js";
 
+// run paper trade
 export async function paperTrade(req, res) {
   const { symbol, strategy, smaShortWindow, smaLongWindow, rsiPeriod } =
     req.body;
