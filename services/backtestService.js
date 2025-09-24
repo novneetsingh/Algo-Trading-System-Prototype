@@ -1,4 +1,4 @@
-import { runSMA, runRSI } from "./strategyService.js";
+import { getSignals } from "./strategyService.js";
 import ErrorResponse from "../utils/errorResponse.js";
 
 export async function backtestStrategy(
@@ -9,15 +9,13 @@ export async function backtestStrategy(
   smaLongWindow,
   rsiPeriod
 ) {
-  let signals = [];
-
-  if (strategy === "sma") {
-    signals = await runSMA(symbol, smaShortWindow || 20, smaLongWindow || 50);
-  } else if (strategy === "rsi") {
-    signals = await runRSI(symbol, rsiPeriod || 14);
-  } else {
-    throw new ErrorResponse("Invalid strategy", 400);
-  }
+  const signals = await getSignals(
+    symbol,
+    strategy,
+    smaShortWindow,
+    smaLongWindow,
+    rsiPeriod
+  );
 
   // Check if signals are generated
   if (!signals.length) {

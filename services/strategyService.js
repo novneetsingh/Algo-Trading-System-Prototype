@@ -15,7 +15,7 @@ function movingAverage(data, window) {
 }
 
 // 1️⃣ Moving Average Crossover (SMA/EMA)
-export async function runSMA(symbol, shortWindow, longWindow) {
+export async function runSMA(symbol, shortWindow = 20, longWindow = 50) {
   // get historical data
   const data = await getHistoricalData(symbol);
 
@@ -56,12 +56,12 @@ export async function runSMA(symbol, shortWindow, longWindow) {
 }
 
 // 2️⃣ RSI (Relative Strength Index) momentum strategy
-export async function runRSI(symbol, period) {
+export async function runRSI(symbol, rsiPeriod = 14) {
   // get historical data
   const data = await getHistoricalData(symbol);
 
   // check if enough data
-  if (data.length < period) {
+  if (data.length < rsiPeriod) {
     throw new ErrorResponse("Not enough data", 400);
   }
 
@@ -80,11 +80,11 @@ export async function runRSI(symbol, period) {
 
   let signals = [];
 
-  for (let i = period; i < closes.length; i++) {
+  for (let i = rsiPeriod; i < closes.length; i++) {
     const avgGain =
-      gains.slice(i - period, i).reduce((sum, g) => sum + g, 0) / period;
+      gains.slice(i - rsiPeriod, i).reduce((sum, g) => sum + g, 0) / rsiPeriod;
     const avgLoss =
-      losses.slice(i - period, i).reduce((sum, l) => sum + l, 0) / period;
+      losses.slice(i - rsiPeriod, i).reduce((sum, l) => sum + l, 0) / rsiPeriod;
 
     // calculate RS
     const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
@@ -112,27 +112,16 @@ export async function runRSI(symbol, period) {
   return signals;
 }
 
-// 3️⃣ Bollinger Bands Mean Reversion
-export async function runBollinger(symbol, window = 20) {
-  const data = await getHistoricalData(symbol);
-  if (data.length < window) throw new Error("Not enough data");
-
-  let signals = [];
-  for (let i = window; i < data.length; i++) {
-    const slice = data.slice(i - window, i);
-    const mean = slice.reduce((sum, d) => sum + d.close, 0) / window;
-    const stdDev = Math.sqrt(
-      slice.reduce((sum, d) => sum + Math.pow(d.close - mean, 2), 0) / window
-    );
-
-    const upper = mean + 2 * stdDev;
-    const lower = mean - 2 * stdDev;
-    const price = data[i].close;
-
-    if (price < lower)
-      signals.push({ date: data[i].date, signal: "BUY", price });
-    else if (price > upper)
-      signals.push({ date: data[i].date, signal: "SELL", price });
-  }
-  return signals;
+// run different strategies
+export async function getSignals(
+  symbol,
+  strategy,
+  smaShortWindow,
+  smaLongWindow,
+  rsiPeriod
+) {
+  if (strategy === "sma")
+    return await runSMA(symbol, smaShortWindow, smaLongWindow);
+  else if (strategy === "rsi") return await runRSI(symbol, rsiPeriod);
+  else throw new ErrorResponse("Invalid strategy", 400);
 }

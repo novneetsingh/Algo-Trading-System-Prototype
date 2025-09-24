@@ -1,4 +1,4 @@
-import { runSMA, runRSI } from "./strategyService.js";
+import { getSignals } from "./strategyService.js";
 import { getLivePrice } from "./dataService.js";
 import ErrorResponse from "../utils/errorResponse.js";
 import { getPortfolio, buyPosition, sellPosition } from "./portfolioService.js";
@@ -11,15 +11,13 @@ export async function runPaperTrade(
   smaLongWindow,
   rsiPeriod
 ) {
-  let signals = [];
-
-  if (strategy === "sma") {
-    signals = await runSMA(symbol, smaShortWindow || 20, smaLongWindow || 50);
-  } else if (strategy === "rsi") {
-    signals = await runRSI(symbol, rsiPeriod || 14);
-  } else {
-    throw new ErrorResponse("Invalid strategy", 400);
-  }
+  const signals = await getSignals(
+    symbol,
+    strategy,
+    smaShortWindow,
+    smaLongWindow,
+    rsiPeriod
+  );
 
   const latestSignal = signals.at(-1);
   if (!latestSignal) {
