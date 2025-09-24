@@ -3,14 +3,15 @@ import ErrorResponse from "../utils/errorResponse.js";
 
 // run paper trade
 export async function paperTrade(req, res) {
-  const { symbol, strategy, smaShortWindow, smaLongWindow, rsiPeriod } =
+  const { userName, symbol, strategy, smaShortWindow, smaLongWindow, rsiPeriod } =
     req.body;
 
-  if (!symbol || !strategy) {
-    throw new ErrorResponse("Symbol and strategy are required", 400);
+  if (!userName || !symbol || !strategy) {
+    throw new ErrorResponse("User name, symbol and strategy are required", 400);
   }
 
   const result = await runPaperTrade(
+    userName,
     symbol,
     strategy,
     smaShortWindow,

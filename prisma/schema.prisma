@@ -19,6 +19,7 @@ model Portfolio {
   id             Int        @id @default(autoincrement())
   userName       String     @unique
   initialCapital Float      @default(0)
+  currentCapital Float      @default(0)
   positions      Position[]
   trades         Trade[]
   createdAt      DateTime   @default(now())
@@ -31,7 +32,10 @@ model Position {
   portfolioId Int
   portfolio   Portfolio @relation(fields: [portfolioId], references: [id])
   symbol      String
-  quantity    Int       @default(0)
+  quantity    Int
+  avgPrice    Float
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@unique([portfolioId, symbol])
 }
@@ -42,9 +46,9 @@ model Trade {
   portfolioId Int
   portfolio   Portfolio @relation(fields: [portfolioId], references: [id])
   symbol      String
-  type        TradeType
-  price       Float
   quantity    Int
+  price       Float
+  type        TradeType
   createdAt   DateTime  @default(now())
 }
 

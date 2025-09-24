@@ -1,8 +1,10 @@
 import { runSMA, runRSI } from "./strategyService.js";
 import { getLivePrice } from "./dataService.js";
 import ErrorResponse from "../utils/errorResponse.js";
+import { getPortfolio, buyPosition, sellPosition } from "./portfolioService.js";
 
 export async function runPaperTrade(
+  userName,
   symbol,
   strategy,
   smaShortWindow,
@@ -24,10 +26,30 @@ export async function runPaperTrade(
     throw new ErrorResponse("No signals generated for this symbol", 400);
   }
 
-  const live = await getLivePrice(symbol);
-  const currentPrice = live.regularMarketPrice;
+  // get live price of symbol
+  const currentPrice = (await getLivePrice(symbol)).regularMarketPrice;
 
-  if (latestSignal.signal === "BUY") {
-  } else if (latestSignal.signal === "SELL") {
+  // get user's portfolio
+  const portfolio = await getPortfolio(userName);
+
+  // check if portfolio exists
+  if (!portfolio) {
+    throw new ErrorResponse("Portfolio not found", 404);
+  }
+
+  // get this symbol's position
+  const position = portfolio.positions.find(
+    (position) => position.symbol === symbol
+  );
+
+  // sell or buy all available positions
+  if (
+    latestSignal.signal === "BUY" &&
+    portfolio.currentCapital > currentPrice
+  ) {
+    const quantity = Math.floor(portfolio.currentCapital / currentPrice);
+    await buyPosition(portfolio.id, symbol, quantity, currentPrice);
+  } else if (latestSignal.signal === "SELL" && position?.quantity > 0) {
+    await sellPosition(portfolio.id, symbol, position.quantity, currentPrice);
   }
 }
