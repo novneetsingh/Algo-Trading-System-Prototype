@@ -3,14 +3,20 @@ import ErrorResponse from "../utils/errorResponse.js";
 
 // run paper trade
 export async function paperTrade(req, res) {
-  const { userName, symbol, strategy, smaShortWindow, smaLongWindow, rsiPeriod } =
-    req.body;
+  const {
+    userName,
+    symbol,
+    strategy,
+    smaShortWindow,
+    smaLongWindow,
+    rsiPeriod,
+  } = req.body;
 
   if (!userName || !symbol || !strategy) {
     throw new ErrorResponse("User name, symbol and strategy are required", 400);
   }
 
-  const result = await runPaperTrade(
+  await runPaperTrade(
     userName,
     symbol,
     strategy,
@@ -20,9 +26,7 @@ export async function paperTrade(req, res) {
   );
 
   res.status(200).json({
-    success: result ? true : false,
-    message: result
-      ? "Paper trade completed successfully"
-      : "Paper trade failed",
+    success: true,
+    message: "Paper trade completed successfully",
   });
 }

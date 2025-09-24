@@ -35,19 +35,24 @@ export async function runPaperTrade(
     throw new ErrorResponse("Portfolio not found", 404);
   }
 
-  // get this symbol's position
-  const position = portfolio.positions.find(
-    (position) => position.symbol === symbol
-  );
-
   // sell or buy all available positions
-  if (
-    latestSignal.signal === "BUY" &&
-    portfolio.currentCapital > currentPrice
-  ) {
+  if (latestSignal.signal === "BUY") {
+    if (portfolio.currentCapital < currentPrice) {
+      throw new ErrorResponse("Not enough capital to buy", 400);
+    }
+
     const quantity = Math.floor(portfolio.currentCapital / currentPrice);
     await buyPosition(portfolio.id, symbol, quantity, currentPrice);
-  } else if (latestSignal.signal === "SELL" && position?.quantity > 0) {
+  } else if (latestSignal.signal === "SELL") {
+    // get this symbol's position
+    const position = portfolio.positions.find(
+      (position) => position.symbol === symbol
+    );
+
+    if (!position || position.quantity === 0) {
+      throw new ErrorResponse("No positions to sell", 400);
+    }
+
     await sellPosition(portfolio.id, symbol, position.quantity, currentPrice);
   }
 }
