@@ -12,7 +12,7 @@ https://algo-trading-system-prototype.onrender.com
 
 ## Features
 
-- **Data Feeds**: Integration with Yahoo Finance API for both historical and live market data
+- **Data Feeds**: Integration with Yahoo Finance package (yahoo-finance2) for both historical and live market data
 - **Trading Strategies**:
   - Moving Average Crossover (SMA)
   - RSI (Relative Strength Index) Momentum Strategy
@@ -25,8 +25,7 @@ https://algo-trading-system-prototype.onrender.com
 
 - **Backend**: Node.js, Express.js
 - **Database**: PostgreSQL with Prisma ORM
-- **Market Data**: Yahoo Finance API
-- **Development Tools**: Prisma CLI, Nodemon
+- **Market Data**: Yahoo Finance package (yahoo-finance2)
 
 ## Project Structure
 
