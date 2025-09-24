@@ -63,19 +63,15 @@ export const getPortfolioDetails = async (req, res) => {
     totalPositionValue += position.quantity * livePrice;
   }
 
-  // calculate current portfolio value
-  const currentPortfolioValue = totalPositionValue + portfolio.currentCapital;
-
   // calculate PnL
-  const PnL = currentPortfolioValue - portfolio.initialCapital;
+  const PnL =
+    totalPositionValue - (portfolio.initialCapital - portfolio.currentCapital);
 
   res.status(200).json({
     success: portfolio ? true : false,
     message: portfolio
       ? "Portfolio details retrieved successfully"
       : "Failed to retrieve portfolio details",
-    data: portfolio
-      ? { currentPortfolioValue, totalPositionValue, PnL, ...portfolio }
-      : null,
+    data: portfolio ? { totalPositionValue, PnL, ...portfolio } : null,
   });
 };
