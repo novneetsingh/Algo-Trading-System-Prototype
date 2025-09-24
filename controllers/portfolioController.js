@@ -1,4 +1,9 @@
-import { createPortfolio, addCapital } from "../services/portfolioService.js";
+import { getLivePrice } from "../services/dataService.js";
+import {
+  createPortfolio,
+  addCapital,
+  getPortfolio,
+} from "../services/portfolioService.js";
 import ErrorResponse from "../utils/errorResponse.js";
 
 // create a papertrade portfolio
@@ -38,5 +43,39 @@ export const addCapitalToPortfolio = async (req, res) => {
     success: portfolio ? true : false,
     message: portfolio ? "Capital added successfully" : "Failed to add capital",
     data: portfolio ?? null,
+  });
+};
+
+// get detailed portfolio details
+export const getPortfolioDetails = async (req, res) => {
+  const { userName } = req.params;
+
+  const portfolio = await getPortfolio(userName);
+
+  if (!portfolio) {
+    throw new ErrorResponse("Portfolio not found", 404);
+  }
+
+  // calculate current position live value
+  let totalPositionValue = 0;
+  for (const position of portfolio.positions) {
+    const livePrice = (await getLivePrice(position.symbol)).regularMarketPrice;
+    totalPositionValue += position.quantity * livePrice;
+  }
+
+  // calculate current portfolio value
+  const currentPortfolioValue = totalPositionValue + portfolio.currentCapital;
+
+  // calculate PnL
+  const PnL = currentPortfolioValue - portfolio.initialCapital;
+
+  res.status(200).json({
+    success: portfolio ? true : false,
+    message: portfolio
+      ? "Portfolio details retrieved successfully"
+      : "Failed to retrieve portfolio details",
+    data: portfolio
+      ? { currentPortfolioValue, totalPositionValue, PnL, ...portfolio }
+      : null,
   });
 };

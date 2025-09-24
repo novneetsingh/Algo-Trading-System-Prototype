@@ -32,6 +32,7 @@ export const getPortfolio = async (userName) => {
     where: { userName },
     include: {
       positions: true,
+      trades: true,
     },
   });
 
